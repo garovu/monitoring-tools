@@ -1,0 +1,31 @@
+# Basic example showing distributed tracing across Java applications
+# https://github.com/openzipkin/brave-example
+
+name: brave-example
+services:
+  # Generate traffic by hitting http://localhost:8081
+  frontend:
+    container_name: frontend
+    image: ghcr.io/openzipkin/brave-example
+    entrypoint: start-frontend
+    ports:
+      - 8081:8081
+    depends_on:
+      backend:
+        condition: service_healthy
+      zipkin:
+        condition: service_started
+  # Serves the /api endpoint the frontend uses
+  backend:
+    container_name: backend
+    image: ghcr.io/openzipkin/brave-example
+    entrypoint: start-backend
+    depends_on:
+      zipkin:
+        condition: service_started
+
+network:
+  default:
+    external: zipkin-compose_default
+
+
